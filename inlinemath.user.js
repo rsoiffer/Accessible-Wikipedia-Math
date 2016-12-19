@@ -5,7 +5,7 @@
 // @include       https://*.wikipedia.org/*
 // @include       C:\Users\*\Wikipedia-replacement-test.html
 // @version       0.1.0
-// @icon          http://www.example.net/icon.png
+// @ icon         http://www.example.net/icon.png
 // ==/UserScript==
 
 alert("I'm running");
@@ -14,39 +14,45 @@ function GetMathMLFromElement(spanElement) {
   // Converts the span and its children into a MathML string
   // Returns a string representing the MathML or an empty string
   //   if it can’t do the conversion
-  GM_log("In GetMathMLFromElement: " + spanElement.outerText);
-  return `<math display='block' xmlns='http://www.w3.org/1998/Math/MathML'>
- <msqrt>
-  <msup>
-   <mi>x</mi>
-   <mn>3</mn>
-  </msup>
- </msqrt>
-</math>`
+  console.log("In GetMathMLFromElement: " + spanElement.innerHTML);
+  return "<math xmlns='http://www.w3.org/1998/Math/MathML'> \
+ <msqrt>\
+  <msup>\
+   <mi>x</mi>\
+   <mn>3</mn>\
+  </msup>\
+ </msqrt>\
+</math>";
 }
 
-function CreateInvisibleMathMLNode(mathMLText) {
+function CreateInvisibleMathMLNode(mathmlText) {
   // Creates a span node with attrs
   //   class="mwe-math-mathml-inline mwe-math-mathml-a11y"
   //   style="display: none;"}
   // The child of the span is mathml string converted to XML
   // Returns a span element
-  GM_log("In CreateInvisibleMathMLNode: " + mathMLText);
   var spanElement = document.createElement("SPAN");
-  spanElement.innerHTML = mathMLText;
+  spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
+  spanElement.setAttribute("style", "display: none;");
+  spanElement.innerHTML = mathmlText;
   return spanElement;  
-}
+};
 
 function Main() {
-  GM_log("Running Main()");
-  var texhtmlElements = document.getElementsByClassName("example");
-  var element;
-  for (element in texhtmlElements) {
+  console.log("Running Main()");
+  var texhtmlElements = document.getElementsByClassName("texhtml");
+  console.log("Found " + texhtmlElements.length + " texhtml elements to change")
+  var i;
+  for (i=0; i<texhtmlElements.length; i++) {
+	var element = texhtmlElements[i];
     var mathmlText = GetMathMLFromElement(element)
     if (mathmlText) {
       element.setAttribute("aria-hidden", "true");
-      element.parentNode.insertbefore(CreateInvisibleMathMLNode(mathmlText), element);
+	  var mathmlSpan = CreateInvisibleMathMLNode(mathmlText);
+	  element.parentElement.insertBefore(mathmlSpan, element);
     }
+  console.log("All done");
   }
+}
 
-Main()
+Main();
