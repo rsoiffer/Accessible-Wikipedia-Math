@@ -95,6 +95,7 @@ function CheckFractionTemplate(element) {
 function CheckIntegralTemplate(element) {
     return element.nodeName === "SPAN"
             && element.childNodes.length === 2
+            && element.childNodes[0].childNodes.length === 1
             && element.childNodes[0].childNodes[0].data === "∫";
 }
 
