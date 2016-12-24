@@ -207,9 +207,9 @@ function TreeToMathML(node) {
             return "<msup>" + children + "</msup>";
         case "fence":
             if (node.children.length === 1) {
-                return "<mo>" + node.value.charAt(0) + "</mo>" + children + "<mo>" + node.value.charAt(1) + "</mo>";
+                return "<mrow><mo>" + node.value.charAt(0) + "</mo>" + children + "<mo>" + node.value.charAt(1) + "</mo></mrow>";
             } else {
-                return "<mo>" + node.value.charAt(0) + "</mo><mrow>" + children + "</mrow><mo>" + node.value.charAt(1) + "</mo>";
+                return "<mrow><mo>" + node.value.charAt(0) + "</mo><mrow>" + children + "</mrow><mo>" + node.value.charAt(1) + "</mo></mrow>";
             }
         case "text":
             if (true) {
@@ -229,7 +229,7 @@ function GetMathMLFromElement(element) {
     var node = GetTreeFromElement(element);
     TreePostProcessing(node);
     console.log(node.stringify() + "\n\n\n\n");
-    return TreeToMathML(node);
+    return "<math>" + TreeToMathML(node) + "</math>";
 }
 
 function CreateInvisibleMathMLNode(mathmlText) {
@@ -240,6 +240,7 @@ function CreateInvisibleMathMLNode(mathmlText) {
     // Returns a span element
     var spanElement = document.createElement("SPAN");
     spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
+//    spanElement.setAttribute("class", "mwe-math-mathml-inline");
     //spanElement.setAttribute("style", "display: none;");
     spanElement.innerHTML = mathmlText;
     return spanElement;
