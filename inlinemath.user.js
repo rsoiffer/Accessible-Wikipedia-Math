@@ -38,6 +38,10 @@ function GetTreeFromElement(element) {
         return GetTreeFromSqrtElement(element);
     if (CheckRadicTemplate(element))
         return GetTreeFromRadicElement(element);
+    if (CheckFractionTemplate(element))
+        return GetTreeFromFractionTemplate(element);
+    if (CheckIntegralTemplate(element))
+        return GetTreeFromIntegralTemplate(element);
     if (CheckSubTemplate(element))
         return GetTreeFromSubTemplate(element);
     if (CheckSupTemplate(element))
@@ -52,18 +56,10 @@ function GetTreeFromElement(element) {
     var tokens = [];
     var m;
     var pos = 0;
-//    console.log(element.textContent);
     while (m = XRegExp.exec(element.textContent, re, pos, "sticky")) {
         tokens.push(m[1]);
         pos = m.index + m[0].length;
-//        console.log(m);
     }
-//    var re = /([0-9]+|(?:[A-Z]|[a-z])+|[^\s])\s*/g;
-//    var tokens = [];
-//    var m;
-//    while (m = re.exec(element.textContent)) {
-//        tokens.push(m[1]);
-//    }
 
     if (tokens.length === 1) {
         return new Node("text", tokens[0]);
@@ -90,6 +86,18 @@ function CheckRadicTemplate(element) {
             && element.childNodes[1].data === "√";
 }
 
+function CheckFractionTemplate(element) {
+    return element.nodeName === "SPAN"
+            && element.className === "sfrac nowrap"
+            && element.childNodes.length === 3;
+}
+
+function CheckIntegralTemplate(element) {
+    return element.nodeName === "SPAN"
+            && element.childNodes.length === 2
+            && element.childNodes[0].childNodes[0].data === "∫";
+}
+
 function CheckSubTemplate(element) {
     return element.nodeName === "SUB";
 }
@@ -105,6 +113,43 @@ function GetTreeFromSqrtElement(element) {
 function GetTreeFromRadicElement(element) {
     return new Node("radic", "", [GetTreeFromElement(element.childNodes[0].childNodes[0]),
         GetTreeFromElement(element.childNodes[2])]);
+}
+
+function GetTreeFromFractionTemplate(element) {
+    return new Node("frac", "", [GetTreeFromElement(element.childNodes[0].childNodes[0]),
+        GetTreeFromElement(element.childNodes[2].childNodes[0])]);
+}
+
+function GetTreeFromIntegralTemplate(element) {
+    var elementData = element.childNodes[1].childNodes.toArray();
+    var brIndex = elementData.length;
+    for (var i=0; i<elementData.length; ++i) {
+      if (elementData[i].nodeName === "BR") {
+        brIndex = i;
+        break;
+      }
+    }
+    var upper = elementData.slice(0, brIndex);
+    var lower = elementData.slice(brIndex+1);
+    var upperElement = null;
+    if (upper.length > 1) {
+      upperElement = new Node("row", "", upper.map(GetTreeFromElement));
+    } else if (upper.length === 1) {
+      upperElement = GetTreeFromElement(upper[0]);
+    }
+
+    var lowerElement = null;
+    if (lower.length > 1) {
+      lowerElement = new Node("row", "", lower.map(GetTreeFromElement));
+    } else if (lower.length === 1) {
+      lowerElement = GetTreeFromElement(lower[0]);
+    }
+
+    var children = [];
+    if (lowerElement) children.push(lowerElement);
+    if (upperElement) children.push(upperElement);
+
+    return new Node("integral", "", children);
 }
 
 function GetTreeFromSubTemplate(element) {
@@ -201,6 +246,10 @@ function TreeToMathML(node) {
             return "<msqrt>" + children + "</msqrt>";
         case "radic":
             return "<mroot>" + children + "</mroot>";
+        case "frac":
+            return "<mfrac>" + children + "</mfrac>";
+        case "integral":
+            return "<msubsup><mo>&int;</mo>" + children + "</msubsup>"
         case "sub":
             return "<msub>" + children + "</msub>";
         case "sup":
@@ -228,7 +277,7 @@ function GetMathMLFromElement(element) {
     //   if it can’t do the conversion
     var node = GetTreeFromElement(element);
     TreePostProcessing(node);
-    console.log(node.stringify() + "\n\n\n\n");
+    //console.log(node.stringify() + "\n\n\n\n");
     return "<math>" + TreeToMathML(node) + "</math>";
 }
 
@@ -247,9 +296,9 @@ function CreateInvisibleMathMLNode(mathmlText) {
 }
 
 function Main() {
-    console.log("Running Main()");
+    //console.log("Running Main()");
     var texhtmlElements = document.getElementsByClassName("texhtml");
-    console.log("Found " + texhtmlElements.length + " texhtml elements to change")
+    //console.log("Found " + texhtmlElements.length + " texhtml elements to change")
     var i;
     for (i = 0; i < texhtmlElements.length; i++) {
         var element = texhtmlElements[i];
@@ -259,7 +308,7 @@ function Main() {
             var mathmlSpan = CreateInvisibleMathMLNode(mathmlText);
             element.parentElement.insertBefore(mathmlSpan, element);
         }
-        console.log("All done");
+        //console.log("All done");
     }
 }
 
