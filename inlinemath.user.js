@@ -279,7 +279,7 @@ function GetMathMLFromElement(element) {
     var node = GetTreeFromElement(element);
     TreePostProcessing(node);
     //console.log(node.stringify() + "\n\n\n\n");
-    return "<math>" + TreeToMathML(node) + "</math>";
+    return "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">" + TreeToMathML(node) + "</math>";
 }
 
 function CreateInvisibleMathMLNode(mathmlText) {
@@ -289,8 +289,8 @@ function CreateInvisibleMathMLNode(mathmlText) {
     // The child of the span is mathml string converted to XML
     // Returns a span element
     var spanElement = document.createElement("SPAN");
-    spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
-//    spanElement.setAttribute("class", "mwe-math-mathml-inline");
+    //spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
+    //spanElement.setAttribute("class", "mwe-math-mathml-inline");
     //spanElement.setAttribute("style", "display: none;");
     spanElement.innerHTML = mathmlText;
     return spanElement;
