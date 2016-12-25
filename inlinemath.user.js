@@ -40,12 +40,18 @@ function GetTreeFromElement(element) {
         return GetTreeFromRadicElement(element);
     if (CheckFractionTemplate(element))
         return GetTreeFromFractionTemplate(element);
+    if (CheckFractionTemplate2(element))
+        return GetTreeFromFractionTemplate2(element);
     if (CheckIntegralTemplate(element))
         return GetTreeFromIntegralTemplate(element);
     if (CheckSubTemplate(element))
         return GetTreeFromSubTemplate(element);
     if (CheckSupTemplate(element))
         return GetTreeFromSupTemplate(element);
+    if (CheckVariableTemplate(element))
+        return GetTreeFromVariableTemplate(element);
+    if (CheckDelimTemplate(element))
+        return GetTreeFromDelimTemplate(element);
 
     if (element.childNodes.length > 0) {
         return CreateRowNode(element);
@@ -75,7 +81,7 @@ function CheckSqrtTemplate(element) {
             && element.className === "nowrap"
             && element.childNodes.length === 2
             && element.childNodes[0].nodeName === "#text"
-            && element.childNodes[0].data === "√";
+            && element.childNodes[0].data === String.fromCharCode(8730); //8730 is √
 }
 
 function CheckRadicTemplate(element) {
@@ -83,7 +89,7 @@ function CheckRadicTemplate(element) {
             && element.className === "nowrap"
             && element.childNodes.length === 3
             && element.childNodes[1].nodeName === "#text"
-            && element.childNodes[1].data === "√";
+            && element.childNodes[1].data === String.fromCharCode(8730); //8730 is √
 }
 
 function CheckFractionTemplate(element) {
@@ -92,11 +98,25 @@ function CheckFractionTemplate(element) {
             && element.childNodes.length === 3;
 }
 
+function CheckFractionTemplate2(element) {
+    return element.nodeName === "SPAN"
+            && element.className === "frac nowrap"
+            && element.childNodes.length === 3;
+}
+
 function CheckIntegralTemplate(element) {
+    var integralSymbols = [String.fromCharCode(8747), //8747 is ∫
+        String.fromCharCode(8748), //8748 is ∬
+        String.fromCharCode(8749), //8749 is ∭
+        String.fromCharCode(8750), //8750 is ∮
+        String.fromCharCode(8751), //8751 is ∯
+        String.fromCharCode(8752), //8752 is ∰
+        String.fromCharCode(8754), //8754 is ∲
+        String.fromCharCode(8755)]; //8755 is ∳
     return element.nodeName === "SPAN"
             && element.childNodes.length === 2
             && element.childNodes[0].childNodes.length === 1
-            && element.childNodes[0].childNodes[0].data === "∫";
+            && integralSymbols.includes(element.childNodes[0].childNodes[0].data);
 }
 
 function CheckSubTemplate(element) {
@@ -107,16 +127,31 @@ function CheckSupTemplate(element) {
     return element.nodeName === "SUP";
 }
 
+function CheckVariableTemplate(element) {
+    return element.nodeName === "I"
+            && element.childNodes.length === 1
+            && element.childNodes[0].nodeName === "#text";
+}
+
+function CheckDelimTemplate(element) {
+    return element.className === "sfrac nowrap;"
+            && element.childNodes.length >= 4;
+}
+
 function GetTreeFromSqrtElement(element) {
     return new Node("sqrt", "", [GetTreeFromElement(element.childNodes[1])]);
 }
 
 function GetTreeFromRadicElement(element) {
-    return new Node("radic", "", [GetTreeFromElement(element.childNodes[0].childNodes[0]),
-        GetTreeFromElement(element.childNodes[2])]);
+    return new Node("radic", "", [GetTreeFromElement(element.childNodes[2]), GetTreeFromElement(element.childNodes[0].childNodes[0])]);
 }
 
 function GetTreeFromFractionTemplate(element) {
+    return new Node("frac", "", [GetTreeFromElement(element.childNodes[0]),
+        GetTreeFromElement(element.childNodes[2])]);
+}
+
+function GetTreeFromFractionTemplate2(element) {
     return new Node("frac", "", [GetTreeFromElement(element.childNodes[0].childNodes[0]),
         GetTreeFromElement(element.childNodes[2].childNodes[0])]);
 }
@@ -124,33 +159,35 @@ function GetTreeFromFractionTemplate(element) {
 function GetTreeFromIntegralTemplate(element) {
     var elementData = element.childNodes[1].childNodes.toArray();
     var brIndex = elementData.length;
-    for (var i=0; i<elementData.length; ++i) {
-      if (elementData[i].nodeName === "BR") {
-        brIndex = i;
-        break;
-      }
+    for (var i = 0; i < elementData.length; ++i) {
+        if (elementData[i].nodeName === "BR") {
+            brIndex = i;
+            break;
+        }
     }
     var upper = elementData.slice(0, brIndex);
-    var lower = elementData.slice(brIndex+1);
-    var upperElement = null;
+    var lower = elementData.slice(brIndex + 1);
+    var upperElement = new Node("row", "");
     if (upper.length > 1) {
-      upperElement = new Node("row", "", upper.map(GetTreeFromElement));
+        upperElement = new Node("row", "", upper.map(GetTreeFromElement));
     } else if (upper.length === 1) {
-      upperElement = GetTreeFromElement(upper[0]);
+        upperElement = GetTreeFromElement(upper[0]);
     }
 
-    var lowerElement = null;
+    var lowerElement = new Node("row", "");
     if (lower.length > 1) {
-      lowerElement = new Node("row", "", lower.map(GetTreeFromElement));
+        lowerElement = new Node("row", "", lower.map(GetTreeFromElement));
     } else if (lower.length === 1) {
-      lowerElement = GetTreeFromElement(lower[0]);
+        lowerElement = GetTreeFromElement(lower[0]);
     }
 
     var children = [];
-    if (lowerElement) children.push(lowerElement);
-    if (upperElement) children.push(upperElement);
+    if (lowerElement)
+        children.push(lowerElement);
+    if (upperElement)
+        children.push(upperElement);
 
-    return new Node("integral", "", children);
+    return new Node("integral", element.childNodes[0].childNodes[0].data, children);
 }
 
 function GetTreeFromSubTemplate(element) {
@@ -159,6 +196,47 @@ function GetTreeFromSubTemplate(element) {
 
 function GetTreeFromSupTemplate(element) {
     return new Node("sup", "", [CreateRowNode(element)]);
+}
+
+function GetTreeFromVariableTemplate(element) {
+    if (element.childNodes[0].data.length === 1) {
+        return new Node("text", element.childNodes[0].data);
+    } else {
+        return new Node("row", "", element.childNodes[0].data.split("").map(function (char) {
+            return new Node("text", char);
+        }));
+    }
+}
+
+function GetTreeFromDelimTemplate(element) {
+    var leftType = "(", rightType = ")";
+    switch (element.childNodes[1].childNodes[0].childNodes[0].childNodes[0].data) {
+        case String.fromCharCode(9121): // 9121 is ⎡ (left square bracket upper corner)
+            leftType = "[";
+            break;
+        case String.fromCharCode(9474): // 9474 is │ (box drawings light vertical)
+            leftType = "|";
+            break;
+        case String.fromCharCode(9553): // 9553 is ║ (box drawings double vertical)
+            leftType = String.fromCharCode(8214); // 8214 is ‖ (double vertical line)
+            break;
+    }
+    switch (element.childNodes[element.childNodes.length - 2].childNodes[0].childNodes[0].childNodes[0].data) {
+        case String.fromCharCode(9124): // 9124 is (right square bracket upper corner)
+            rightType = "]";
+            break;
+        case String.fromCharCode(9474): // 9474 is │ (box drawings light vertical)
+            rightType = "|";
+            break;
+        case String.fromCharCode(9553): // 9553 is ║ (box drawings double vertical)
+            rightType = String.fromCharCode(8214); // 8214 is ‖ (double vertical line)
+            break;
+    }
+    var newNode = new Node("fence", leftType + rightType);
+    for (var i = 2; i < element.childNodes.length - 2; i++) {
+        newNode.children.push(GetTreeFromElement(element.childNodes[i]));
+    }
+    return newNode;
 }
 
 function CreateRowNode(element) {
@@ -221,12 +299,18 @@ function MatchFences(node) {
 }
 
 function FixSubSup(node) {
-    for (var i = 1; i < node.children.length; i++) {
-        var child = node.children[i];
-        if (child.type === "sub" || child.type === "sup") {
-            if (child.children.length === 1) {
-                i--;
-                child.children.unshift(node.children.splice(i, 1)[0]);
+    if (node.type === "sub" || node.type === "sup") {
+        if (node.children.length < 2) {
+            node.type = "row";
+        }
+    } else {
+        for (var i = 1; i < node.children.length; i++) {
+            var child = node.children[i];
+            if (child.type === "sub" || child.type === "sup") {
+                if (child.children.length === 1) {
+                    i--;
+                    child.children.unshift(node.children.splice(i, 1)[0]);
+                }
             }
         }
     }
@@ -250,7 +334,7 @@ function TreeToMathML(node) {
         case "frac":
             return "<mfrac>" + children + "</mfrac>";
         case "integral":
-            return "<msubsup><mo>&int;</mo>" + children + "</msubsup>"
+            return "<msubsup><mo>" + node.value + "</mo>" + children + "</msubsup>"
         case "sub":
             return "<msub>" + children + "</msub>";
         case "sup":
@@ -262,10 +346,10 @@ function TreeToMathML(node) {
                 return "<mrow><mo>" + node.value.charAt(0) + "</mo><mrow>" + children + "</mrow><mo>" + node.value.charAt(1) + "</mo></mrow>";
             }
         case "text":
-            if (true) {
+            if (XRegExp.test(node.value, XRegExp("\\pL+"))) {
                 return "<mi>" + node.value + "</mi>";
-            } else if (true) {
-                return "<mo>" + node.value + "</mn>";
+            } else if (/[0-9]+/.test(node.value)) {
+                return "<mn>" + node.value + "</mn>";
             } else {
                 return "<mo>" + node.value + "</mo>";
             }
@@ -278,8 +362,8 @@ function GetMathMLFromElement(element) {
     //   if it can’t do the conversion
     var node = GetTreeFromElement(element);
     TreePostProcessing(node);
-    //console.log(node.stringify() + "\n\n\n\n");
-    return "<math xmlns=\"http://www.w3.org/1998/Math/MathML\">" + TreeToMathML(node) + "</math>";
+    console.log(node.stringify());
+    return "<math>" + TreeToMathML(node) + "</math>";
 }
 
 function CreateInvisibleMathMLNode(mathmlText) {
@@ -289,32 +373,29 @@ function CreateInvisibleMathMLNode(mathmlText) {
     // The child of the span is mathml string converted to XML
     // Returns a span element
     var spanElement = document.createElement("SPAN");
-    //spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
-    //spanElement.setAttribute("class", "mwe-math-mathml-inline");
-    //spanElement.setAttribute("style", "display: none;");
+    spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
+    spanElement.setAttribute("style", "display: none;");
     spanElement.innerHTML = mathmlText;
     return spanElement;
 }
 
-function Main() {
-    //console.log("Running Main()");
-    var texhtmlElements = document.getElementsByClassName("texhtml");
-    //console.log("Found " + texhtmlElements.length + " texhtml elements to change")
-    var i;
-    for (i = 0; i < texhtmlElements.length; i++) {
-        var element = texhtmlElements[i];
+function FindMathElements(element) {
+    if (element.className && (element.className.includes("texhtml")
+            || element.className.includes("sfrac")
+            || (element.nodeName === "SPAN" && element.className === "nowrap" && !element.outerHTML.includes("mathml")))) {
         var mathmlText = GetMathMLFromElement(element);
         if (mathmlText) {
             element.setAttribute("aria-hidden", "true");
             var mathmlSpan = CreateInvisibleMathMLNode(mathmlText);
             element.parentElement.insertBefore(mathmlSpan, element);
         }
-        //console.log("All done");
+    } else {
+        element.childNodes.toArray().forEach(FindMathElements);
     }
 }
 
 try {
-    Main();
+    FindMathElements(document);
 } catch (e) {
     console.error(e);
 }
