@@ -451,8 +451,8 @@ function CreateInvisibleMathMLNode(mathmlText) {
     // The child of the span is mathml string converted to XML
     // Returns a span element
     var spanElement = document.createElement("SPAN");
-//    spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
-//    spanElement.setAttribute("style", "display: none;");
+    spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
+    spanElement.setAttribute("style", "display: none;");
     spanElement.innerHTML = mathmlText;
     return spanElement;
 }
