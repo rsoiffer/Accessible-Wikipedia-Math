@@ -5,7 +5,7 @@
 // @include       https://*.wikipedia.org/*
 // @require       https://raw.githubusercontent.com/slevithan/xregexp/master/xregexp-all.js
 // @version       0.1.0
-// @icon          https://github.com/Weirdbob95/Accessible-Wikipedia-Math/blob/master/cat-icon.png
+// @icon          https://raw.githubusercontent.com/Weirdbob95/Accessible-Wikipedia-Math/master/cat-icon.png
 // @grant         none
 // ==/UserScript==
 
