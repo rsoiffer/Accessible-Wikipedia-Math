@@ -5,8 +5,7 @@
 // @include       https://*.wikipedia.org/*
 // @require       https://raw.githubusercontent.com/slevithan/xregexp/master/xregexp-all.js
 // @version       0.1.0
-// @icon          https://raw.githubusercontent.com/Weirdbob95/Accessible-Wikipedia-Math/master/cat-icon.png
-// @grant         none
+// @icon         http://www.example.net/icon.png
 // ==/UserScript==
 
 
@@ -74,9 +73,8 @@ function GetTreeFromElement(element) {
             0x00B0, 0x00B2, 0x00B3, 0x00B4, 0x00B9, 0x00BA, 0x2018, 0x2019, 0x201A, 0x201B,
             0x201D, 0x201E, 0x201F, 0x2032, 0x2033, 0x2034, 0x2035, 0x2036, 0x2037, 0x2057);
 
-
     // Parse text
-    var re = XRegExp("\\s*([0-9]+|\\pL+|[" + pseudoScripts + "]+|[^\\s])\\s*");
+    var re = XRegExp("\\s*([0-9,\\.]+|\\pL+|[" + pseudoScripts + "]+|[^\\s])\\s*");
     var tokens = [];
     var m;
     var pos = 0;
@@ -171,7 +169,9 @@ function CheckUnderTemplate(element) {
 }
 
 function CheckVariableTemplate(element) {
-    return element.nodeName === "I"
+    return (element.nodeName === "I"
+            || (element.nodeName === "SPAN"
+                    && element.getAttribute("style") === "font-style:italic;"))
             && element.childNodes.length === 1
             && element.childNodes[0].nodeName === "#text";
 }
@@ -423,7 +423,7 @@ function TreeToMathML(node) {
         case "text":
             if (XRegExp.test(node.value, XRegExp("\\pL+"))) {
                 return "<mi>" + node.value + "</mi>";
-            } else if (/[0-9]+/.test(node.value)) {
+            } else if (/[0-9,\.]+/.test(node.value)) {
                 return "<mn>" + node.value + "</mn>";
             } else {
                 return "<mo>" + node.value + "</mo>";
@@ -451,8 +451,8 @@ function CreateInvisibleMathMLNode(mathmlText) {
     // The child of the span is mathml string converted to XML
     // Returns a span element
     var spanElement = document.createElement("SPAN");
-    spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
-    spanElement.setAttribute("style", "display: none;");
+//    spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
+//    spanElement.setAttribute("style", "display: none;");
     spanElement.innerHTML = mathmlText;
     return spanElement;
 }
