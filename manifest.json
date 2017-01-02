@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "accessible-wikipedia-math",
+  "version": "0.1",
+  "description": "Ubiquitize MathML on Wikipedia",
+  "homepage_url": "https://github.com/Weirdbob95/Accessible-Wikipedia-Math",
+
+  "icons": {
+    "48": "cat-icon.png"
+  },
+
+  "content_scripts": [{
+    "matches": ["*://*.wikipedia.org/*"],
+    "js": ["xregexp-all.js", "content-script.js"]
+  }]
+
+}

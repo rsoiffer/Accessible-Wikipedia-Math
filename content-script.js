@@ -1,14 +1,3 @@
-// ==UserScript==
-// @name          Inline accessible wikipedia math
-// @namespace     http://www.talkingcatsoftware.com/gmscripts
-// @description   Makes math authored with the "math" template accessible by adding a MathML equivalent to the template output
-// @include       https://*.wikipedia.org/*
-// @require       https://raw.githubusercontent.com/slevithan/xregexp/master/xregexp-all.js
-// @version       0.1.0
-// @icon         http://www.example.net/icon.png
-// ==/UserScript==
-
-
 NodeList.prototype.toArray = function () {
     return Array.prototype.slice.call(this);
 }
@@ -451,8 +440,8 @@ function CreateInvisibleMathMLNode(mathmlText) {
     // The child of the span is mathml string converted to XML
     // Returns a span element
     var spanElement = document.createElement("SPAN");
-//    spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
-//    spanElement.setAttribute("style", "display: none;");
+    spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
+    spanElement.setAttribute("style", "display: none;");
     spanElement.innerHTML = mathmlText;
     return spanElement;
 }
