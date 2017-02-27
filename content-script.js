@@ -378,44 +378,116 @@ function FixSubSup(node) {
 ///// [End Post Processing]
 
 function TreeToMathML(node) {
-    var children = node.children.map(TreeToMathML).reduce(function (a, b) {
-        return a + b;
-    }, "");
-
+    var children = node.children.map(TreeToMathML);
     switch (node.type) {
         case "row":
-            return "<mrow>" + children + "</mrow>";
+            elem = document.createElement("mrow");
+            for (var c of children) {
+              elem.appendChild(c);
+            }
+            return elem;
         case "sqrt":
-            return "<msqrt>" + children + "</msqrt>";
+            elem = document.createElement("msqrt");
+            for (var c of children) {
+              elem.appendChild(c);
+            }
+            return elem;
         case "radic":
-            return "<mroot>" + children + "</mroot>";
+            elem = document.createElement("mroot");
+            for (var c of children) {
+              elem.appendChild(c);
+            }
+            return elem;
         case "frac":
-            return "<mfrac>" + children + "</mfrac>";
+            elem = document.createElement("mfrac");
+            for (var c of children) {
+              elem.appendChild(c);
+            }
+            return elem;
         case "integral":
-            return "<msubsup><mo>" + node.value + "</mo>" + children + "</msubsup>"
+            elem = document.createElement("msubsup");
+            mo = document.createElement("mo");
+            mo.appendChild(document.createTextNode(node.value));
+            elem.appendChild(mo);
+            for (var c of children) {
+              elem.appendChild(c);
+            }
+            return elem;
         case "sub":
-            if (node.value === "2")
-                return "<munder>" + children + "</munder>";
-            return "<msub>" + children + "</msub>";
+            if (node.value === "2") {
+                elem = document.createElement("munder");
+                for (var c of children) {
+                    elem.appendChild(c);
+                }
+                return elem;
+            } else {
+                elem = document.createElement("msub");
+                for (var c of children) {
+                    elem.appendChild(c);
+                }
+                return elem;
+            }
         case "sup":
-            if (node.value === "2")
-                return "<mover>" + children + "</mover>";
-            return "<msup>" + children + "</msup>";
+            if (node.value === "2") {
+                elem = document.createElement("mover");
+                for (var c of children) {
+                    elem.appendChild(c);
+                }
+                return elem;
+            } else {
+                elem = document.createElement("msup");
+                for (var c of children) {
+                    elem.appendChild(c);
+                }
+                return elem;
+            }
         case "su":
-            return "<msubsup>" + children + "</msupsup>";
+            elem = document.createElement("msubsup");
+            for (var c of children) {
+                elem.appendChild(c);
+            }
+            return elem;
         case "fence":
             if (node.children.length === 1) {
-                return "<mrow><mo>" + node.value.charAt(0) + "</mo>" + children + "<mo>" + node.value.charAt(1) + "</mo></mrow>";
+                elem = document.createElement("mrow");
+                mo1 = document.createElement("mo");
+                mo1.appendChild(document.createTextNode(node.value.charAt(0)));
+                mo2 = document.createElement("mo");
+                mo2.appendChild(document.createTextNode(node.value.charAt(1)));
+                elem.appendChild(mo1);
+                for (var c of children) {
+                    elem.appendChild(c);
+                }
+                elem.appendChild(mo2);
+                return elem;
             } else {
-                return "<mrow><mo>" + node.value.charAt(0) + "</mo><mrow>" + children + "</mrow><mo>" + node.value.charAt(1) + "</mo></mrow>";
+                elem1 = document.createElement("mrow");
+                elem2 = document.createElement("mrow");
+                mo1 = document.createElement("mo");
+                mo1.appendChild(document.createTextNode(node.value.charAt(0)));
+                mo2 = document.createElement("mo");
+                mo2.appendChild(document.createTextNode(node.value.charAt(1)));
+                elem1.appendChild(mo1);
+                for (var c of children) {
+                    elem2.appendChild(c);
+                }
+                elem1.appendChild(elem2);
+                elem1.appendChild(mo2);
+                return elem;
             }
         case "text":
             if (XRegExp.test(node.value, XRegExp("\\pL+"))) {
-                return "<mi>" + node.value + "</mi>";
+                elem = document.createElement("mi");
+                elem.appendChild(document.createTextNode(node.value));
+                return elem;
             } else if (/[0-9,\.]+/.test(node.value)) {
-                return "<mn>" + node.value + "</mn>";
+                elem = document.createElement("mn");
+                elem.appendChild(document.createTextNode(node.value));
+                return elem;
             } else {
-                return "<mo>" + node.value + "</mo>";
+                elem = document.createElement("mo");
+                elem.appendChild(document.createTextNode(node.value));
+                return elem;
             }
     }
 }
@@ -428,9 +500,15 @@ function GetMathMLFromElement(element) {
     TreePostProcessing(node);
     var mathml = TreeToMathML(node);
     if (element.className.includes("mathcal")) {
-        mathml = "<mstyle mathvariant=script>" + mathml + "</mstyle>";
+        style = document.createElement("mstyle");
+        style.setAttribute("mathvariant", "script");
+        style.appendChild(mathml);
+        mathml = style;
     }
-    return "<math xmlns='http://www.w3.org/1998/Math/MathML'>" + mathml + "</math>";
+    math = document.createElement("math");
+    math.setAttribute("xmlns", "http://www.w3.org/1998/Math/MathML");
+    math.appendChild(mathml);
+    return math;
 }
 
 function CreateInvisibleMathMLNode(mathmlText) {
@@ -442,7 +520,7 @@ function CreateInvisibleMathMLNode(mathmlText) {
     var spanElement = document.createElement("SPAN");
     spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
     spanElement.setAttribute("style", "display: none;");
-    spanElement.innerHTML = mathmlText;
+    spanElement.appendChild(mathmlText);
     return spanElement;
 }
 
