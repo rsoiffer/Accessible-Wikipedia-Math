@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "accessible-wikipedia-math",
-  "version": "0.1",
+  "version": "0.2",
   "description": "Increases accessibility of math in Wikipedia pages",
   "homepage_url": "https://github.com/Weirdbob95/Accessible-Wikipedia-Math",
 
