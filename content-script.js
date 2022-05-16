@@ -24,7 +24,6 @@ Node.prototype.stringify = function (level) {
 ///// [Templates]
 
 function GetTreeFromElement(element) {
-    console.log(element);
     if (element.nodeName === "SPAN" && element.getAttribute("style") === "display:none") {
         return new Node("row", "");
     }
@@ -58,15 +57,15 @@ function GetTreeFromElement(element) {
         return CreateRowNode(element);
     }
 
-    var pseudoScripts = String.fromCharCode(0x0022, 0x0027, 0x002A, 0x0060, 0x00AA,
+    let pseudoScripts = String.fromCharCode(0x0022, 0x0027, 0x002A, 0x0060, 0x00AA,
             0x00B0, 0x00B2, 0x00B3, 0x00B4, 0x00B9, 0x00BA, 0x2018, 0x2019, 0x201A, 0x201B,
             0x201D, 0x201E, 0x201F, 0x2032, 0x2033, 0x2034, 0x2035, 0x2036, 0x2037, 0x2057);
 
     // Parse text
-    var re = XRegExp("\\s*([0-9,\\.]+|\\pL+|[" + pseudoScripts + "]+|[^\\s])\\s*");
-    var tokens = [];
-    var m;
-    var pos = 0;
+    let re = XRegExp("\\s*([0-9,\\.]+|\\pL+|[" + pseudoScripts + "]+|[^\\s])\\s*");
+    let tokens = [];
+    let m;
+    let pos = 0;
     while (m = XRegExp.exec(element.textContent, re, pos, "sticky")) {
         tokens.push(m[1]);
         pos = m.index + m[0].length;
@@ -118,7 +117,7 @@ function CheckFractionTemplate2(element) {
 }
 
 function CheckIntegralTemplate(element) {
-    var integralSymbols = [String.fromCharCode(8747), //8747 is ∫
+    let integralSymbols = [String.fromCharCode(8747), //8747 is ∫
         String.fromCharCode(8748), //8748 is ∬
         String.fromCharCode(8749), //8749 is ∭
         String.fromCharCode(8750), //8750 is ∮
@@ -194,31 +193,31 @@ function GetTreeFromFractionTemplate2(element) {
 }
 
 function GetTreeFromIntegralTemplate(element) {
-    var elementData = element.childNodes[1].childNodes.toArray();
-    var brIndex = elementData.length;
-    for (var i = 0; i < elementData.length; ++i) {
+    let elementData = element.childNodes[1].childNodes.toArray();
+    let brIndex = elementData.length;
+    for (let i = 0; i < elementData.length; ++i) {
         if (elementData[i].nodeName === "BR") {
             brIndex = i;
             break;
         }
     }
-    var upper = elementData.slice(0, brIndex);
-    var lower = elementData.slice(brIndex + 1);
-    var upperElement = new Node("row", "");
+    let upper = elementData.slice(0, brIndex);
+    let lower = elementData.slice(brIndex + 1);
+    let upperElement = new Node("row", "");
     if (upper.length > 1) {
         upperElement = new Node("row", "", upper.map(GetTreeFromElement));
     } else if (upper.length === 1) {
         upperElement = GetTreeFromElement(upper[0]);
     }
 
-    var lowerElement = new Node("row", "");
+    let lowerElement = new Node("row", "");
     if (lower.length > 1) {
         lowerElement = new Node("row", "", lower.map(GetTreeFromElement));
     } else if (lower.length === 1) {
         lowerElement = GetTreeFromElement(lower[0]);
     }
 
-    var children = [];
+    let children = [];
     if (lowerElement)
         children.push(lowerElement);
     if (upperElement)
@@ -258,7 +257,7 @@ function GetTreeFromVariableTemplate(element) {
 }
 
 function GetTreeFromDelimTemplate(element) {
-    var leftType = "(", rightType = ")";
+    let leftType = "(", rightType = ")";
     switch (element.childNodes[1].childNodes[0].childNodes[0].childNodes[0].data) {
         case String.fromCharCode(9121): // 9121 is ⎡ (left square bracket upper corner)
             leftType = "[";
@@ -281,8 +280,8 @@ function GetTreeFromDelimTemplate(element) {
             rightType = String.fromCharCode(8214); // 8214 is ‖ (double vertical line)
             break;
     }
-    var newNode = new Node("fence", leftType + rightType);
-    for (var i = 2; i < element.childNodes.length - 2; i++) {
+    let newNode = new Node("fence", leftType + rightType);
+    for (let i = 2; i < element.childNodes.length - 2; i++) {
         newNode.children.push(GetTreeFromElement(element.childNodes[i]));
     }
     return newNode;
@@ -324,21 +323,21 @@ function RemoveNestedRows(node) {
 }
 
 function MatchFences(node) {
-    var openFences = ["(", "[", "{"];
-    var closeFences = [")", "]", "}"];
+    let openFences = ["(", "[", "{"];
+    let closeFences = [")", "]", "}"];
 
     while (node.children.some(function (child) {
         return child.type === "text" && openFences.includes(child.value);
     })) {
-        var lastFencePos = -1;
-        var lastFenceType = "";
-        for (var i = 0; i < node.children.length; i++) {
-            var child = node.children[i];
+        let lastFencePos = -1;
+        let lastFenceType = "";
+        for (let i = 0; i < node.children.length; i++) {
+            let child = node.children[i];
             if (child.type === "text" && openFences.includes(child.value)) {
                 lastFencePos = i;
                 lastFenceType = child.value;
             } else if (child.type === "text" && closeFences.includes(child.value) && lastFencePos !== -1) {
-                var newNode = new Node("fence", lastFenceType + child.value, node.children.splice(lastFencePos, i - lastFencePos + 1).slice(1, -1));
+                let newNode = new Node("fence", lastFenceType + child.value, node.children.splice(lastFencePos, i - lastFencePos + 1).slice(1, -1));
                 node.children.splice(lastFencePos, 0, newNode);
                 break;
             }
@@ -357,8 +356,8 @@ function FixSubSup(node) {
             node.type = "row";
         }
     } else {
-        for (var i = 1; i < node.children.length; i++) {
-            var child = node.children[i];
+        for (let i = 1; i < node.children.length; i++) {
+            let child = node.children[i];
             if (child.type === "sub" || child.type === "sup") {
                 if (child.children.length === 1) {
                     i--;
@@ -378,51 +377,53 @@ function FixSubSup(node) {
 ///// [End Post Processing]
 
 function TreeToMathML(node) {
-    var children = node.children.map(TreeToMathML);
+    let children = node.children.map(TreeToMathML);
+    ("children: ", children);
+    let elem = undefined;
     switch (node.type) {
         case "row":
             elem = document.createElement("mrow");
-            for (var c of children) {
+            for (let c of children) {
               elem.appendChild(c);
             }
             return elem;
         case "sqrt":
             elem = document.createElement("msqrt");
-            for (var c of children) {
+            for (let c of children) {
               elem.appendChild(c);
             }
             return elem;
         case "radic":
             elem = document.createElement("mroot");
-            for (var c of children) {
+            for (let c of children) {
               elem.appendChild(c);
             }
             return elem;
         case "frac":
             elem = document.createElement("mfrac");
-            for (var c of children) {
+            for (let c of children) {
               elem.appendChild(c);
             }
             return elem;
         case "integral":
             elem = document.createElement("msubsup");
-            mo = document.createElement("mo");
+            let mo = document.createElement("mo");
             mo.appendChild(document.createTextNode(node.value));
             elem.appendChild(mo);
-            for (var c of children) {
+            for (let c of children) {
               elem.appendChild(c);
             }
             return elem;
         case "sub":
             if (node.value === "2") {
                 elem = document.createElement("munder");
-                for (var c of children) {
+                for (let c of children) {
                     elem.appendChild(c);
                 }
                 return elem;
             } else {
                 elem = document.createElement("msub");
-                for (var c of children) {
+                for (let c of children) {
                     elem.appendChild(c);
                 }
                 return elem;
@@ -430,20 +431,20 @@ function TreeToMathML(node) {
         case "sup":
             if (node.value === "2") {
                 elem = document.createElement("mover");
-                for (var c of children) {
+                for (let c of children) {
                     elem.appendChild(c);
                 }
                 return elem;
             } else {
                 elem = document.createElement("msup");
-                for (var c of children) {
+                for (let c of children) {
                     elem.appendChild(c);
                 }
                 return elem;
             }
         case "su":
             elem = document.createElement("msubsup");
-            for (var c of children) {
+            for (let c of children) {
                 elem.appendChild(c);
             }
             return elem;
@@ -455,32 +456,32 @@ function TreeToMathML(node) {
                 mo2 = document.createElement("mo");
                 mo2.appendChild(document.createTextNode(node.value.charAt(1)));
                 elem.appendChild(mo1);
-                for (var c of children) {
+                for (let c of children) {
                     elem.appendChild(c);
                 }
                 elem.appendChild(mo2);
                 return elem;
             } else {
-                elem1 = document.createElement("mrow");
-                elem2 = document.createElement("mrow");
-                mo1 = document.createElement("mo");
+                let elem1 = document.createElement("mrow");
+                let elem2 = document.createElement("mrow");
+                let mo1 = document.createElement("mo");
                 mo1.appendChild(document.createTextNode(node.value.charAt(0)));
-                mo2 = document.createElement("mo");
+                let mo2 = document.createElement("mo");
                 mo2.appendChild(document.createTextNode(node.value.charAt(1)));
                 elem1.appendChild(mo1);
-                for (var c of children) {
+                for (let c of children) {
                     elem2.appendChild(c);
                 }
                 elem1.appendChild(elem2);
                 elem1.appendChild(mo2);
-                return elem;
+                return elem1;
             }
         case "text":
             if (XRegExp.test(node.value, XRegExp("\\pL+"))) {
                 elem = document.createElement("mi");
                 elem.appendChild(document.createTextNode(node.value));
                 return elem;
-            } else if (/[0-9,\.]+/.test(node.value)) {
+            } else if ( !(node.value.length===1 && /[,\.]/.test(node.value)) && /[0-9,\.]+/.test(node.value) ) {
                 elem = document.createElement("mn");
                 elem.appendChild(document.createTextNode(node.value));
                 return elem;
@@ -496,9 +497,9 @@ function GetMathMLFromElement(element) {
     // Converts the span and its children into a MathML string
     // Returns a string representing the MathML or an empty string
     //   if it can’t do the conversion
-    var node = GetTreeFromElement(element);
+    let node = GetTreeFromElement(element);
     TreePostProcessing(node);
-    var mathml = TreeToMathML(node);
+    let mathml = TreeToMathML(node);
     if (element.className.includes("mathcal")) {
         style = document.createElement("mstyle");
         style.setAttribute("mathvariant", "script");
@@ -517,7 +518,7 @@ function CreateInvisibleMathMLNode(mathmlText) {
     //   style="display: none;"}
     // The child of the span is mathml string converted to XML
     // Returns a span element
-    var spanElement = document.createElement("SPAN");
+    let spanElement = document.createElement("SPAN");
     spanElement.setAttribute("class", "mwe-math-mathml-inline mwe-math-mathml-a11y");
     spanElement.setAttribute("style", "display: none;");
     spanElement.appendChild(mathmlText);
@@ -529,10 +530,10 @@ function FindMathElements(element) {
             || element.className.includes("sfrac")
             || element.className.includes("mathcal")
             || (element.nodeName === "SPAN" && element.className === "nowrap" && !element.outerHTML.includes("mathml")))) {
-        var mathmlText = GetMathMLFromElement(element);
+        let mathmlText = GetMathMLFromElement(element);
         if (mathmlText) {
             element.setAttribute("aria-hidden", "true");
-            var mathmlSpan = CreateInvisibleMathMLNode(mathmlText);
+            let mathmlSpan = CreateInvisibleMathMLNode(mathmlText);
             element.parentElement.insertBefore(mathmlSpan, element);
         }
     } else {
