@@ -378,7 +378,6 @@ function FixSubSup(node) {
 
 function TreeToMathML(node) {
     let children = node.children.map(TreeToMathML);
-    ("children: ", children);
     let elem = undefined;
     switch (node.type) {
         case "row":
@@ -451,9 +450,9 @@ function TreeToMathML(node) {
         case "fence":
             if (node.children.length === 1) {
                 elem = document.createElement("mrow");
-                mo1 = document.createElement("mo");
+                let mo1 = document.createElement("mo");
                 mo1.appendChild(document.createTextNode(node.value.charAt(0)));
-                mo2 = document.createElement("mo");
+                let mo2 = document.createElement("mo");
                 mo2.appendChild(document.createTextNode(node.value.charAt(1)));
                 elem.appendChild(mo1);
                 for (let c of children) {
@@ -506,7 +505,7 @@ function GetMathMLFromElement(element) {
         style.appendChild(mathml);
         mathml = style;
     }
-    math = document.createElement("math");
+    let math = document.createElement("math");
     math.setAttribute("xmlns", "http://www.w3.org/1998/Math/MathML");
     math.appendChild(mathml);
     return math;
