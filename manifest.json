@@ -5,10 +5,6 @@
   "description": "Increases accessibility of math in Wikipedia pages by reverse engineering inline representations",
   "homepage_url": "https://github.com/rsoiffer/Accessible-Wikipedia-Math",
 
-  "icons": {
-    "48": "cat-icon.png"
-  },
-
   "content_scripts": [{
     "matches": ["*://*.wikipedia.org/*"],
     "js": ["xregexp-all.js", "content-script.js"]
