@@ -2,8 +2,8 @@
   "manifest_version": 3,
   "name": "accessible-wikipedia-math",
   "version": "0.3",
-  "description": "Increases accessibility of math in Wikipedia pages",
-  "homepage_url": "https://github.com/Weirdbob95/Accessible-Wikipedia-Math",
+  "description": "Increases accessibility of math in Wikipedia pages by reverse engineering inline representations",
+  "homepage_url": "https://github.com/rsoiffer/Accessible-Wikipedia-Math",
 
   "icons": {
     "48": "cat-icon.png"
