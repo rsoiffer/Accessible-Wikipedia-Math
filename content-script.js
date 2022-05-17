@@ -522,8 +522,12 @@ function GetMathMLFromElement(element) {
         style.appendChild(mathml);
         mathml = style;
     }
+    
     let math = document.createElement("math");
     math.setAttribute("xmlns", "http://www.w3.org/1998/Math/MathML");
+    // setting the role shouldn't be needed, but for some reason Chrome is picking up that this is math
+    math.setAttribute("role", "math");
+
     math.appendChild(mathml);
     return math;
 }
@@ -548,9 +552,15 @@ function FindMathElements(element) {
             || (element.nodeName === "SPAN" && element.className === "nowrap" && !element.outerHTML.includes("mathml")))) {
         let mathmlText = GetMathMLFromElement(element);
         if (mathmlText) {
+            // replace element with a new element that have as the children the new MathML element and this element
+            // this mimics what is done for display math in Wikipedia
+            let wrapper = document.createElement("SPAN");
+            wrapper.setAttribute("class", "mwe-math-element");
+            wrapper.appendChild( CreateInvisibleMathMLNode(mathmlText) );
+        
             element.setAttribute("aria-hidden", "true");
-            let mathmlSpan = CreateInvisibleMathMLNode(mathmlText);
-            element.parentElement.insertBefore(mathmlSpan, element);
+            element.replaceWith(wrapper);
+            wrapper.appendChild(element);
         }
     } else {
         element.childNodes.toArray().forEach(FindMathElements);
