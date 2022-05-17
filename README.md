@@ -1,4 +1,4 @@
-# Accessible-Wikipedia-Math
+This extension is only activated for pages on `wikipedia.org`.
 
 Wikipedia has three main ways to author math: using the `<math>` tag with a version of TeX inside, using the "texhtml" template, and using "raw" HTML (`<i>`, `<sup>`, etc) or its wiki equivalent.
 
@@ -11,3 +11,7 @@ As a guess, 75%-80% of the math in wikipedia is written with the math tag, with 
 For more information, see https://en.wikipedia.org/wiki/Wikipedia:Rendering_math
 
 Note: there is now a wikipedia project to do this conversion directly, but the project currently does not have a timeline for when it will be worked on and completed. This add-on fills in the gap until the project is implemented and deployed.
+
+
+## Privacy Policy
+This extension does NOT collect any user data. What you read on Wikipedia is your business, not ours.
