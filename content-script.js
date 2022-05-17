@@ -23,19 +23,25 @@ Node.prototype.stringify = function (level) {
 
 ///// [Templates]
 
+// Actually, this could be a text node also -- code checks
 function GetTreeFromElement(element) {
     if (element.nodeName === "SPAN" && element.getAttribute("style") === "display:none") {
         return new Node("row", "");
     }
-
-    if (CheckSqrtTemplate(element))
+    if (element.nodeType === 1 ) {  // ELEMENT_NODEfor ba
+        // these check the className, and hence need to be elements
+        if (CheckSqrtTemplate(element))
         return GetTreeFromSqrtElement(element);
-    if (CheckRadicTemplate(element))
-        return GetTreeFromRadicElement(element);
-    if (CheckFractionTemplate(element))
-        return GetTreeFromFractionTemplate(element);
-    if (CheckFractionTemplate2(element))
-        return GetTreeFromFractionTemplate2(element);
+        if (CheckRadicTemplate(element))
+            return GetTreeFromRadicElement(element);
+        if (CheckFractionTemplate(element))
+            return GetTreeFromFractionTemplate(element);
+        if (CheckFractionTemplate2(element))
+            return GetTreeFromFractionTemplate2(element);
+        if (CheckDelimTemplate(element))
+            return GetTreeFromDelimTemplate(element);
+    }
+
     if (CheckIntegralTemplate(element))
         return GetTreeFromIntegralTemplate(element);
     if (CheckSubTemplate(element))
@@ -50,8 +56,6 @@ function GetTreeFromElement(element) {
         return GetTreeFromUnderTemplate(element);
     if (CheckVariableTemplate(element))
         return GetTreeFromVariableTemplate(element);
-    if (CheckDelimTemplate(element))
-        return GetTreeFromDelimTemplate(element);
 
     if (element.childNodes.length > 0) {
         return CreateRowNode(element);
@@ -106,13 +110,13 @@ function CheckRadicTemplate(element) {
 
 function CheckFractionTemplate(element) {
     return element.nodeName === "SPAN"
-            && element.className === "sfrac nowrap"
+            && element.classList.contains("sfrac")
             && element.childNodes.length === 3;
 }
 
 function CheckFractionTemplate2(element) {
     return element.nodeName === "SPAN"
-            && element.className === "frac nowrap"
+            && element.classList.contains("frac")
             && element.childNodes.length === 3;
 }
 
@@ -165,7 +169,7 @@ function CheckVariableTemplate(element) {
 }
 
 function CheckDelimTemplate(element) {
-    return element.className === "sfrac nowrap;"
+    return element.classList.contains("sfrac")
             && element.childNodes.length >= 4;
 }
 
@@ -496,6 +500,19 @@ function GetMathMLFromElement(element) {
     // Converts the span and its children into a MathML string
     // Returns a string representing the MathML or an empty string
     //   if it can’t do the conversion
+    // There are a few nodes such as the inline dy/dx in https://en.wikipedia.org/wiki/Calculus#Leibniz_notation
+    //   that don't start with a span -- skip them
+    let found_style_or_link = false;
+    for (let child of element.children) {
+        if (child.nodeName === 'STYLE' || child.nodeName === 'LINK') {
+            found_style_or_link = true;
+        } else {
+            if (found_style_or_link) {
+                element = child;
+            }
+            break;
+        }
+    }
     let node = GetTreeFromElement(element);
     TreePostProcessing(node);
     let mathml = TreeToMathML(node);
