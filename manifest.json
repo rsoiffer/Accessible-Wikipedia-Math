@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "accessible-wikipedia-math",
-  "version": "0.3",
+  "version": "0.5",
   "description": "Increases accessibility of math in Wikipedia pages by reverse engineering inline representations",
   "homepage_url": "https://github.com/rsoiffer/Accessible-Wikipedia-Math",
 
