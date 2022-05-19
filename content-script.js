@@ -40,25 +40,32 @@ function GetTreeFromElement(element) {
             return GetTreeFromFractionTemplate2(element);
         if (CheckDelimTemplate(element))
             return GetTreeFromDelimTemplate(element);
-    }
 
-    if (CheckIntegralTemplate(element))
-        return GetTreeFromIntegralTemplate(element);
-    if (CheckSubTemplate(element))
-        return GetTreeFromSubTemplate(element);
-    if (CheckSupTemplate(element))
-        return GetTreeFromSupTemplate(element);
-    if (CheckSuTemplate(element))
-        return GetTreeFromSuTemplate(element);
-    if (CheckOverTemplate(element))
-        return GetTreeFromOverTemplate(element);
-    if (CheckUnderTemplate(element))
-        return GetTreeFromUnderTemplate(element);
-    if (CheckVariableTemplate(element))
-        return GetTreeFromVariableTemplate(element);
+        // all of these assume we have an element (SPAN, SUB, SUP)
+        if (CheckIntegralTemplate(element))
+            return GetTreeFromIntegralTemplate(element);
+        if (CheckSubTemplate(element))
+            return GetTreeFromSubTemplate(element);
+        if (CheckSupTemplate(element))
+            return GetTreeFromSupTemplate(element);
+        if (CheckSuTemplate(element))
+            return GetTreeFromSuTemplate(element);
+        if (CheckOverTemplate(element))
+            return GetTreeFromOverTemplate(element);
+        if (CheckUnderTemplate(element))
+            return GetTreeFromUnderTemplate(element);
+        if (CheckVariableTemplate(element))
+            return GetTreeFromVariableTemplate(element);
 
-    if (element.childNodes.length > 0) {
-        return CreateRowNode(element);
+        // There are a few nodes such as the inline dy/dx in https://en.wikipedia.org/wiki/Calculus#Leibniz_notation
+        //   that don't start with a span (in this case <style> or <link>) -- we don't know what they are so skip them
+        if (element.nodeName !== "SPAN") {
+            return new Node("row", "");
+        }
+
+        if (element.childNodes.length > 0) {
+            return CreateRowNode(element);
+        }
     }
 
     let pseudoScripts = String.fromCharCode(0x0022, 0x0027, 0x002A, 0x0060, 0x00AA,
@@ -500,19 +507,6 @@ function GetMathMLFromElement(element) {
     // Converts the span and its children into a MathML string
     // Returns a string representing the MathML or an empty string
     //   if it can’t do the conversion
-    // There are a few nodes such as the inline dy/dx in https://en.wikipedia.org/wiki/Calculus#Leibniz_notation
-    //   that don't start with a span -- skip them
-    let found_style_or_link = false;
-    for (let child of element.children) {
-        if (child.nodeName === 'STYLE' || child.nodeName === 'LINK') {
-            found_style_or_link = true;
-        } else {
-            if (found_style_or_link) {
-                element = child;
-            }
-            break;
-        }
-    }
     let node = GetTreeFromElement(element);
     TreePostProcessing(node);
     let mathml = TreeToMathML(node);
