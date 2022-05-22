@@ -539,11 +539,21 @@ function CreateInvisibleMathMLNode(mathmlText) {
     return spanElement;
 }
 
-function FindMathElements(element) {
-    if (element.className && (element.className.includes("texhtml")
-            || element.className.includes("sfrac")
-            || element.className.includes("mathcal")
-            || (element.nodeName === "SPAN" && element.className === "nowrap" && !element.outerHTML.includes("mathml")))) {
+function FindMathElements(node) {
+    // Find the inline math items.
+    // Most seem to be inside of nodes with a class list that includes "texhtml"
+    if (node.nodeType !== 1) {   // '1' is element
+        return;
+    }
+    let element = node;          // just being clear that we are dealing with an element
+    let className = element.className;
+    if (element.getAttribute("role") == "math" ||
+        className && (
+            className.includes("texhtml") ||
+            className.includes("sfrac") ||
+            className.includes("frac") ||
+            className.includes("mathcal")
+        ) ) {
         let mathmlText = GetMathMLFromElement(element);
         if (mathmlText) {
             // replace element with a new element that have as the children the new MathML element and this element
@@ -561,8 +571,21 @@ function FindMathElements(element) {
     }
 }
 
+function FindDisplayMath(doc) {
+    // Display math is (apparently for presentational purposes) inside of dl/dd
+    // This results in screen readers saying "list with one item"  ... "out of list"
+    // We add role="presentation" which doesn't change display but tells AT this isn't a list.
+    let displayMath = doc.querySelectorAll("dl>dd>span.mwe-math-element");
+    displayMath.forEach((span) => {
+        let dd = span.parentElement;
+        dd.setAttribute("role", "presentation");
+        dd.parentElement.setAttribute("role", "presentation");
+    })
+}
+
 try {
-    FindMathElements(document);
+    FindMathElements(document.body);
+    FindDisplayMath(document.body);
 } catch (e) {
     console.error(e);
 }
